@@ -572,6 +572,10 @@ dims_fetch_remote_image(dims_request_rec *d, const char *url)
         long response_code = 0;
         curl_easy_getinfo(curl_handle, CURLINFO_RESPONSE_CODE, &response_code);
         curl_easy_cleanup(curl_handle);
+                    ap_log_rerror(APLOG_MARK, APLOG_ERR, 0, d->r, 
+                    "received a , '%d', on request: %s ", 
+                    response_code, d->r->uri);
+
         if(response_code != 200) {
             if(image_data.data) {
                 free(image_data.data);
