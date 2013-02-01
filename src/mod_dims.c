@@ -1283,7 +1283,7 @@ dims_handler(request_rec *r)
         }
 
         /* HACK: If URL has "http:/" instead of "http://", correct it. */
-        url = strstr(r->unparsed_uri), "http:/");
+        url = strstr(r->unparsed_uri, "http:/");
         if(url && *(url + 6) != '/') {
             fixed_url = apr_psprintf(r->pool, "http://%s", url + 6);
         } else if(!url) {
