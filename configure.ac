@@ -12,7 +12,7 @@ AC_ARG_WITH(imagemagick, [  --with-imagemagick        Specify installation direc
     imagemagick_dir=$with_imagemagick
     LDFLAGS+=" -L$imagemagick_dir/lib"
     CFLAGS+=" -I$imagemagick_dir/include/ImageMagick"
-],[]
+],[echo nope]
 )
 AC_SUBST(imagemagick_dir)
 
