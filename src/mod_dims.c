@@ -1248,7 +1248,7 @@ dims_handler(request_rec *r)
     apr_table_setn(r->notes, "DIMS_IM_TIME", "-");
 
     ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, d->r, 
-            "Handler %s : %s", r->handler, r->uri);
+            "Handler %s : %s (%s)", r->handler, r->uri, r->unparsed_uri);
     /* Handle old-style DIMS parameters. */
     if(strcmp(r->handler, "dims-local") == 0 &&
             (r->path_info && strlen(r->path_info) != 0)) {
