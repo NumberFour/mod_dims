@@ -50,6 +50,7 @@
 #define DIMS_BAD_ARGUMENTS 32
 #define DIMS_HOSTNAME_NOT_IN_WHITELIST 64
 #define DIMS_FILE_NOT_FOUND 128
+#define DIMS_NOT_MODIFIED 256
 
 typedef struct dims_request_rec dims_request_rec;
 typedef struct dims_config_rec dims_config_rec;
@@ -75,6 +76,7 @@ dims_operation_func
     dims_autolevel_operation,
     dims_rotate_operation,
     dims_invert_operation,
+    dims_extent_operation,
     dims_legacy_crop_operation;
 
 struct dims_config_rec {
@@ -161,6 +163,9 @@ struct dims_request_rec {
     
     /* Use a whitelist, or use a secret key passed on the URI */
     int use_secret_key;
+    
+    /* mtime of the image being processed */
+    apr_time_t modification_time;
 };
 
 #endif

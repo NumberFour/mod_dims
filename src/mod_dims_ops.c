@@ -241,6 +241,34 @@ dims_rotate_operation (dims_request_rec *d, char *args, char **err) {
     return DIMS_SUCCESS;
 }
 
+apr_status_t
+dims_extent_operation (dims_request_rec *d, char *args, char **err) {
+    MagickStatusType flags;
+    RectangleInfo rec;
+    
+    flags = ParseAbsoluteGeometry(args, &rec);
+    if(!(flags & AllValues)) {
+        *err = "Parsing extent geometry failed";
+        return DIMS_FAILURE;
+    }
+    
+    PixelWand *p_wand = NewPixelWand();
+    long w,h;
+    int x, y;
+    
+    PixelSetColor(p_wand, "white");
+    
+    w = MagickGetImageWidth(d->wand);
+    h = MagickGetImageHeight(d->wand);
+    
+    MagickSetImageBackgroundColor(d->wand,p_wand);
+    
+    x = (w - rec.width) / 2;
+    y = (h - rec.height) / 2;
+    MAGICK_CHECK(MagickExtentImage(d->wand,rec.width, rec.height, x, y), d);
+    
+    return DIMS_SUCCESS;   
+} 
 
 /**
  * Legacy API support.

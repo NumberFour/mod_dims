@@ -42,6 +42,9 @@
 #include <scoreboard.h>
 
 #include <curl/curl.h>
+#include <curl/types.h>
+#include <curl/easy.h>
+#include "apr_date.h"
 
 module dims_module; 
 
@@ -762,6 +765,12 @@ dims_send_image(dims_request_rec *d)
         apr_table_set(d->r->notes, "DIMS_CLIENT", d->client_id);
         apr_table_set(d->r->subprocess_env, buf, d->client_id);
     }
+    
+    if (d->modification_time) {
+        char buffer[APR_RFC822_DATE_LEN];
+        apr_rfc822_date(buffer, d->modification_time);
+        apr_table_set(d->r->headers_out, "Last-Modified", buffer);
+    }
 
     ap_rwrite(blob, length, d->r);
     ap_rflush(d->r);
@@ -824,14 +833,18 @@ dims_cleanup(dims_request_rec *d, char *err_msg, int status)
 
         MagickRelinquishMemory(msg);
         DestroyMagickWand(d->wand);
-    } 
+    }
     
     if(err_msg) {
         ap_log_rerror(APLOG_MARK, APLOG_ERR, 0, d->r, 
                 "mod_dims error, '%s', on request: %s ", 
                 err_msg, d->r->uri);
     }
-
+    
+    if ( status == DIMS_NOT_MODIFIED) {
+        return HTTP_NOT_MODIFIED;        
+    }
+    
     if(d->no_image_url) {
         d->wand = NewMagickWand();
         if(!dims_fetch_remote_image(d, NULL)) {
@@ -839,11 +852,11 @@ dims_cleanup(dims_request_rec *d, char *err_msg, int status)
         } 
         DestroyMagickWand(d->wand);
     }
+    
     if ( status != DIMS_SUCCESS ) {
         return HTTP_NOT_FOUND;
-    }
-    else {
-     return DECLINED;   
+    } else {
+        return DECLINED;   
     }
      
 }
@@ -1102,12 +1115,30 @@ dims_handle_request(dims_request_rec *d)
 
         /* Read image from disk. */
         start_time = apr_time_now();
-        status = apr_stat(&finfo, d->filename, APR_FINFO_SIZE, d->pool);
+        status = apr_stat(&finfo, d->filename, APR_FINFO_SIZE | APR_FINFO_MTIME, d->pool);
         if(status != 0) {
             return dims_cleanup(d, "Unable to stat image file", DIMS_FILE_NOT_FOUND);
         }
+        
         d->download_time = (apr_time_now() - start_time) / 1000;
         d->original_image_size = finfo.size;
+        d->modification_time = finfo.mtime;
+        
+        char *if_modified_since = apr_table_get(d->r->headers_in, "If-Modified-Since");
+        if (if_modified_since) {
+            apr_time_t if_modified_since_time = apr_date_parse_http(if_modified_since);
+            apr_int64_t if_modified_since_sec, request_time_sec, modification_time_sec;
+            
+            /* Convert everything to seconds, because HTTP protocol does not allow higher time resolution */
+            if_modified_since_sec = apr_time_sec(if_modified_since_time);
+            request_time_sec = apr_time_sec(d->r->request_time);
+            modification_time_sec = apr_time_sec(d->modification_time);
+            
+            if ((if_modified_since_sec >= modification_time_sec) && (if_modified_since_sec <= request_time_sec)) {
+                
+                return dims_cleanup(d, NULL, DIMS_NOT_MODIFIED);
+            }
+        }
 
         start_time = apr_time_now();
         MAGICK_CHECK(MagickReadImage(d->wand, d->filename), d);
@@ -1484,6 +1515,7 @@ dims_init(apr_pool_t *p, apr_pool_t *plog, apr_pool_t* ptemp, server_rec *s)
     apr_hash_set(ops, "autolevel", APR_HASH_KEY_STRING, dims_autolevel_operation);
     apr_hash_set(ops, "rotate", APR_HASH_KEY_STRING, dims_rotate_operation);
     apr_hash_set(ops, "invert", APR_HASH_KEY_STRING, dims_invert_operation);
+    apr_hash_set(ops, "extent", APR_HASH_KEY_STRING, dims_extent_operation);
 
     /* Init APR's atomic functions */
     status = apr_atomic_init(p);
