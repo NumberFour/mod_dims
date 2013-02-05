@@ -4,7 +4,7 @@
 Summary: Apache Module mod_dims
 Name: mod_dims
 Version: 3.4.0
-Release: 4.nf25
+Release: 4.nf26
 License: APL
 Vendor: BeetleBugOrg at GitHub
 Packager: $Id:$
