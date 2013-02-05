@@ -26,7 +26,6 @@ DIMS is a webservice that allows for dynamic image manipulation. It allows for e
 The source can be found on our github account: https://github.com/NumberFour/mod_dims.git
 which is a fork of https://github.com/beetlebugorg/mod_dims.git and adds in the branch at https://github.com/Scout24-CoC-MPS/mod_dims.git
 
-%prep
 
 To checkout the source, do: git clone https://github.com/NumberFour/mod_dims.git
 
@@ -46,7 +45,7 @@ make %{?_smp_mflags}
 rm -rf %{buildroot}
 mkdir -p %{buildroot}
 
-install -m 0644 src/.libs/libmod_dims.so -D %{buildroot}%{_libdir}/httpd/modules/mod_dims.so
+install -m 0644 src/.libs/libmod_dims.so -D /etc/httpd/modules/mod_dims.so
 
 
 
@@ -56,6 +55,6 @@ install -m 0644 src/.libs/libmod_dims.so -D %{buildroot}%{_libdir}/httpd/modules
 %files
 %defattr(-,root,root,-)
 %doc COPYING README.markdown
-%{_libdir}/httpd/modules/mod_dims.so
+/etc/httpd/modules/mod_dims.so
 
 %changelog
