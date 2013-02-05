@@ -4,7 +4,7 @@
 Summary: Apache Module mod_dims
 Name: mod_dims
 Version: 3.4.0
-Release: 4.nf26
+Release: 4.nf27
 License: APL
 Vendor: BeetleBugOrg at GitHub
 Packager: $Id:$
@@ -12,7 +12,6 @@ Group: System Environment/Daemons
 Source0: %{name}-%{version}.tar.gz
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
-BuildArch: i386
 BuildRequires: ImageMagick-devel
 BuildRequires: curl-devel
 BuildRequires: httpd-devel
@@ -26,8 +25,6 @@ DIMS is a webservice that allows for dynamic image manipulation. It allows for e
 The source can be found on our github account: https://github.com/NumberFour/mod_dims.git
 which is a fork of https://github.com/beetlebugorg/mod_dims.git and adds in the branch at https://github.com/Scout24-CoC-MPS/mod_dims.git
 
-%prep
-
 To checkout the source, do: git clone https://github.com/NumberFour/mod_dims.git
 
 %prep
@@ -36,7 +33,7 @@ To checkout the source, do: git clone https://github.com/NumberFour/mod_dims.git
 
 %build
 ./autorun.sh
-export LDFLAGS="$LDFLAGS -L/usr/lib/httpd"
+export LDFLAGS="$LDFLAGS -L%{_libdir}/httpd"
 export CFLAGS="$CFLAGS -I/usr/include/httpd -I/usr/include/ImageMagick"
 
 %configure 
