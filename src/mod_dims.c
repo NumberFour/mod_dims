@@ -42,7 +42,7 @@
 #include <scoreboard.h>
 
 #include <curl/curl.h>
-#include <curl/types.h>
+//include <curl/types.h> no longer included in curl distro been empty before
 #include <curl/easy.h>
 #include "apr_date.h"
 
